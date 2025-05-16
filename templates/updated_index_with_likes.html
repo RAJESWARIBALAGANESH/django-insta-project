@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Instagram Clone</title>
+  <link rel="stylesheet" href="../static/updated_style_with_likes.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    /* Sidebar styles */
+    .comment-sidebar {
+      position: fixed;
+      right: -300px;
+      top: 0;
+      width: 300px;
+      height: 100%;
+      background-color: white;
+      box-shadow: -2px 0px 10px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      overflow-y: auto;
+      transition: right 0.3s ease;
+    }
+
+    .comment-sidebar.open {
+      right: 0;
+    }
+
+    .comment-sidebar .comment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+
+    .comment-sidebar .comment-body {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+    }
+
+    .comment-sidebar .comment {
+      margin-bottom: 10px;
+    }
+
+    .comment-sidebar .comment-input textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .comment-sidebar .comment-input button {
+      width: 100%;
+      padding: 10px;
+      background-color: #0095f6;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .comment-sidebar .comment-input button:hover {
+      background-color: #007bb5;
+    }
+
+    /* Icon and post actions styling */
+    .post-actions i {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="logo">Instagram</div>
+    <div class="nav-icons">
+      <i class="fas fa-home"></i>
+      <i class="fas fa-search"></i>
+      <i class="fas fa-plus-square"></i>
+      <i class="fas fa-heart"></i>
+      <i class="fas fa-user-circle"></i>
+    </div>
+  </header>
+
+  <!-- Stories -->
+  <section class="stories">
+    <div class="story"><img src="https://i.pravatar.cc/150?img=10" alt="story" /></div>
+    <div class="story"><img src="https://i.pravatar.cc/150?img=20" alt="story" /></div>
+    <div class="story"><img src="https://i.pravatar.cc/150?img=30" alt="story" /></div>
+    <div class="story"><img src="https://i.pravatar.cc/150?img=40" alt="story" /></div>
+    <div class="story"><img src="https://i.pravatar.cc/150?img=50" alt="story" /></div>
+    <div class="story"><img src="https://i.pravatar.cc/150?img=60" alt="story" /></div>
+  </section>
+
+  <!-- Feed -->
+  <section class="feed">
+    <div class="post" id="post-1">
+      <div class="post-header">
+        <img src="https://i.pravatar.cc/150?img=10" alt="profile">
+        <span>sunny_girl</span>
+      </div>
+      <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80" alt="post" class="post-img">
+      <div class="post-actions">
+        <i class="far fa-heart"></i>
+        <i class="far fa-comment" onclick="openCommentSidebar(1)"></i>
+        <span class="comment-count" id="comment-count-1">2</span> <!-- Add this line -->
+        <i class="far fa-paper-plane"></i>
+      </div>
+     <div class="likes" id="likes-1">0 likes</div>
+      <div class="caption"><strong>sunny_girl</strong> Sunset vibes 🌇</div>
+    </div>
+  </section>
+
+  <!-- Comment Sidebar -->
+  <div class="comment-sidebar" id="commentSidebar">
+    <div class="comment-header">
+      <span>Comments</span>
+      <i class="fas fa-times" onclick="closeCommentSidebar()"></i>
+    </div>
+    <div class="comment-body" id="commentBody">
+      <div class="comment"><strong>alex</strong> Wow, so beautiful!</div>
+      <div class="comment"><strong>emma</strong> Love this place!</div>
+    </div>
+    <div class="comment-input">
+      <textarea placeholder="Add a comment..."></textarea>
+      <button onclick="addComment()">Post</button>
+    </div>
+  </div>
+
+  <script>
+    const commentSidebar = document.getElementById("commentSidebar");
+    const commentBody = document.getElementById("commentBody");
+
+    function openCommentSidebar(postId) {
+      commentSidebar.classList.add("open");
+      commentSidebar.setAttribute("data-post-id", postId);
+    }
+
+    function closeCommentSidebar() {
+      commentSidebar.classList.remove("open");
+    }
+
+    // ✅ 1. Move this to the top
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === name + '=') {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  // ✅ 2. Keep addComment() here
+  async function addComment() {
+    const textarea = document.querySelector(".comment-sidebar textarea");
+    const commentText = textarea.value.trim();
+    const postId = commentSidebar.getAttribute("data-post-id");
+
+    if (!commentText) {
+      alert("Please enter a comment!");
+      return;
+    }
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/comments/create/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')  // ✅ now it works
+        },
+        body: JSON.stringify({
+          post: parseInt(postId),
+          username: 'test_user',
+          comment_text: commentText
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(JSON.stringify(errorData));
+      }
+
+      const data = await response.json();
+      console.log('Comment added:', data);
+
+      const div = document.createElement('div');
+      div.classList.add('comment');
+      div.innerHTML = `<strong>you</strong> ${commentText}`;
+      commentBody.appendChild(div);
+      textarea.value = "";
+      commentBody.scrollTop = commentBody.scrollHeight;
+
+      const countSpan = document.getElementById(`comment-count-${postId}`);
+      if (countSpan) {
+        let currentCount = parseInt(countSpan.textContent || "0");
+        countSpan.textContent = currentCount + 1;
+      }
+
+    } catch (error) {
+      console.error('Error:', error);
+      alert("Failed to add comment: " + error.message);
+    }
+  }
+
+
+
+    const likeIcons = document.querySelectorAll(".fa-heart");
+
+    likeIcons.forEach((icon, index) => {
+  let liked = false;  // Local state per post
+
+  icon.addEventListener("click", () => {
+    const postElement = icon.closest('.post');
+    const postId = postElement.id.split('-')[1];  // Get the post ID
+    const likesDiv = document.getElementById(`likes-${postId}`);
+
+    // Extract current number from likes text
+    let likesText = likesDiv.textContent;
+    let currentLikes = parseInt(likesText.replace(/[^0-9]/g, ''));
+
+    if (!liked) {
+      currentLikes += 1;
+      icon.classList.add("fas");
+      liked = true;
+    } else {
+      currentLikes -= 1;
+      icon.classList.remove("fas");
+      liked = false;
+    }
+
+    // Format with commas
+    likesDiv.textContent = `${currentLikes.toLocaleString()} likes`;
+
+    // Optional: send POST to backend
+    // sendLikeToServer(postId, liked);
+  });
+});
+
+  </script>
+</body>
+</html>
